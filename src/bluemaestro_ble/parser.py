@@ -29,6 +29,7 @@ class BlueMaestroDevice:
 
 
 DEVICE_TYPES = {
+    0x16: BlueMaestroDevice("Tempo Disc THD", Struct("!BhhhHhH").unpack),
     0x17: BlueMaestroDevice("Tempo Disc THD", Struct("!BhhhHhH").unpack),
     0x1B: BlueMaestroDevice("Tempo Disc THPD", Struct("!BhhhHhH").unpack),
 }
@@ -61,7 +62,7 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
         self.set_device_name(f"{name} {short_address(service_info.address)}")
         self.set_device_manufacturer("BlueMaestro")
         unpacked = device.unpack(data[1:14])
-        if device_id == 0x17:
+        if device_id in [0x16, 0x17]:
             (batt, time_interval, log_cnt, temp, humi, dew_point, mode) = unpacked
             self.update_predefined_sensor(
                 SensorLibrary.DEW_POINT__TEMP_CELSIUS, dew_point / 10
