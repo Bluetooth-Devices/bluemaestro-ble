@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.3 (2023-02-07)
+### Fix
+* Account for switching adapter when finding changed_manufacturer_data ([#6](https://github.com/Bluetooth-Devices/bluemaestro-ble/issues/6)) ([`93528a8`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/93528a8185820d5a69c3bfad9772da794cf7ad40))
+
 ## v0.2.2 (2023-02-07)
 ### Fix
 * Update isort to fix CI ([#5](https://github.com/Bluetooth-Devices/bluemaestro-ble/issues/5)) ([`1d56f1e`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/1d56f1ed6b6bbfcbb5e93689a64ae780d726755b))

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bluemaestro-ble"
-version = "0.2.2"
+version = "0.2.3"
 description = "bluemaestro BLE devices"
 authors = ["J. Nick Koston <nick@koston.org>"]
 license = "MIT"
