@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v0.4.0 (2025-04-30)
+
+### Chores
+
+- **deps**: Bump sphinx from 5.3.0 to 6.2.1
+  ([#34](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/34),
+  [`d8c6f56`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/d8c6f56f69c7093dca7056a6eba465e475754812))
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps**: Bump sphinx-rtd-theme from 1.3.0 to 2.0.0
+  ([#33](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/33),
+  [`2a74e5a`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/2a74e5a250992e4bdffff2e2709432d318947d8b))
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps-dev**: Bump pytest-cov from 3.0.0 to 6.1.1
+  ([#27](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/27),
+  [`df69075`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/df69075977be0ce7219fe0b6066d4ba6be2bc453))
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+### Features
+
+- Use changed_manufacturer_data from newer bluetooth-sensor-state-data
+  ([#35](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/35),
+  [`77085be`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/77085be6c67d7bbd406e977fef5cc9c40b751a37))
+
+
 ## v0.3.0 (2025-04-28)
 
 ### Chores
