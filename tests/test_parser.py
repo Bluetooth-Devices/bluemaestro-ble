@@ -220,3 +220,29 @@ def test_temp_disc_thd_raw():
             ),
         },
     )
+
+
+def test_temp_disc_thd_raw_missing_data():
+    """Test 307 in the manufacturer data by raw is missing it."""
+    parser = BlueMaestroBluetoothDeviceData()
+    update = parser.update(
+        make_bluetooth_service_info(
+            name="FA17B62C",
+            manufacturer_data={307: b""},  # any will do
+            address="aa:bb:cc:dd:ee:ff",
+            rssi=-60,
+            service_data={},
+            service_uuids=[],
+            source="local",
+            raw=b"\x2a\xff",
+        )
+    )
+    assert update == SensorUpdate(
+        title=None,
+        devices={},
+        entity_descriptions={},
+        entity_values={},
+        binary_entity_descriptions={},
+        binary_entity_values={},
+        events={},
+    )
