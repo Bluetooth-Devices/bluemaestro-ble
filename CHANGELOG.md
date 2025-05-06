@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v0.4.1 (2025-05-06)
+
+### Bug Fixes
+
+- Add a guard for missing changed_manufacturer_data
+  ([#39](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/39),
+  [`1e16738`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/1e1673837c2cee996a3af4d89c3edf83a6ad85db))
+
+### Chores
+
+- **deps**: Bump habluetooth from 3.45.0 to 3.48.2
+  ([#36](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/36),
+  [`9e1d207`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/9e1d2072bdd4cb5651b7d1a1870158d2986886ff))
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps**: Bump myst-parser from 1.0.0 to 3.0.1
+  ([#37](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/37),
+  [`187c71c`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/187c71cf59c1f3dcdeb7548a39e623e908ec6641))
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **pre-commit.ci**: Pre-commit autoupdate
+  ([#38](https://github.com/Bluetooth-Devices/bluemaestro-ble/pull/38),
+  [`bd9baa9`](https://github.com/Bluetooth-Devices/bluemaestro-ble/commit/bd9baa9eb097b9bd01e7e18c35a83c7fc77b3476))
+
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
 ## v0.4.0 (2025-04-30)
 
 ### Chores
