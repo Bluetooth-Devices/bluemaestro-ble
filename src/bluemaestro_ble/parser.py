@@ -52,6 +52,8 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
             # ble adapters so we do not know which data is the latest
             # and we need to wait for the next update.
             return
+        if MFR_ID not in changed_manufacturer_data:
+            return
         data = changed_manufacturer_data[MFR_ID]
         if len(data) < 14:
             return
