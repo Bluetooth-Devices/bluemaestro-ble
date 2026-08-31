@@ -69,12 +69,12 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
         self.set_device_manufacturer("BlueMaestro")
         unpacked = device.unpack(data[1:14])
         if device_id in [0x16, 0x17]:
-            (batt, time_interval, log_cnt, temp, humi, dew_point, mode) = unpacked
+            batt, time_interval, log_cnt, temp, humi, dew_point, mode = unpacked
             self.update_predefined_sensor(
                 SensorLibrary.DEW_POINT__TEMP_CELSIUS, dew_point / 10
             )
         elif device_id == 0x1B:
-            (batt, time_interval, log_cnt, temp, humi, press, mode) = unpacked
+            batt, time_interval, log_cnt, temp, humi, press, mode = unpacked
             self.update_predefined_sensor(SensorLibrary.PRESSURE__MBAR, press / 10)
         self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, batt)
         self.update_predefined_sensor(SensorLibrary.TEMPERATURE__CELSIUS, temp / 10)
