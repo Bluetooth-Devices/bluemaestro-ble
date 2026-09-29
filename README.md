@@ -30,7 +30,40 @@
   <img src="https://img.shields.io/pypi/l/bluemaestro-ble.svg?style=flat-square" alt="License">
 </p>
 
-bluemaestro BLE devices
+A Python library for decoding BlueMaestro Bluetooth Low Energy sensor advertisements.
+
+## Supported advertisement formats
+
+| Version | Device family                         | Readings                                                       |
+| ------- | ------------------------------------- | -------------------------------------------------------------- |
+| 8       | Legacy BlueMaestro temperature sensor | Temperature, battery                                           |
+| 13      | Tempo Disc / Disc Mini temperature    | Temperature, battery                                           |
+| 22      | Legacy Tempo Disc THD                 | Temperature, humidity, transmitted dew point, battery          |
+| 23      | Tempo Disc THD / Disc Mini 3-in-1     | Temperature, humidity, calculated dew point, battery           |
+| 27      | Tempo Disc THPD / Disc Mini 4-in-1    | Temperature, humidity, pressure, calculated dew point, battery |
+| 41      | Disc Maxi temperature                 | Temperature, battery                                           |
+| 42      | Disc Maxi 3-in-1                      | Temperature, humidity, calculated dew point, battery           |
+| 43      | Disc Maxi 4-in-1                      | Temperature, humidity, pressure, calculated dew point, battery |
+
+All devices also expose signal strength. Measurements arrive passively over Bluetooth;
+no connection or pairing is required. This library does not download historical logs
+or change device settings. Readings use Celsius, percent relative humidity, and
+mbar; applications can convert these values to their preferred display units.
+
+The additional formats and corrections were checked against synthetic execution of
+bmLogger 13.8.4 installed from Google Play, with identical results against the
+earlier 12.04.00 app. Physical v13/v23 advertisements from seven devices were
+validated against the app. Other formats and sensor firmware revisions remain
+unverified on hardware. Version 22 preserves the earlier library format; it is
+not dispatched by that app version. Version 8's exact commercial model name is
+unconfirmed.
+
+Dew point is calculated using the app's formula for versions 23, 27, 42 and 43.
+It becomes unknown at zero humidity instead of leaving a stale reading.
+Optional trailing advertisement data is accepted; truncated packets are ignored.
+Legacy pressure is decoded unsigned and divided by 10, as in the app; modern
+pressure is converted from Pa to mbar. Phone-local calibration settings are not
+available in the advertisements.
 
 ## Installation
 
