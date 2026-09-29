@@ -9,7 +9,7 @@ from bleak.backends.device import BLEDevice
 from habluetooth import BluetoothServiceInfoBleak
 from sensor_state_data import DeviceKey
 
-from bluemaestro_ble.parser import BlueMaestroBluetoothDeviceData, _dew_point
+from bluemaestro_ble.parser import BlueMaestroBluetoothDeviceData
 
 
 class AppVector(TypedDict):
@@ -27,7 +27,10 @@ LIVE_VECTORS = json.loads(
     (Path(__file__).parent / "fixtures/live-proxy.json").read_text()
 )
 LEGACY_22 = bytes.fromhex("16640e10000200f201f200830100")
-PACKETS = [bytes.fromhex(row["payload"]) for row in VECTORS[::5]] + [LEGACY_22]
+LEGACY_23 = bytes.fromhex("17640e10000200f201f200830100")
+PACKETS = [
+    bytes.fromhex(row["payload"]) for row in VECTORS[::5] if row["version"] != 23
+] + [LEGACY_22, LEGACY_23]
 
 
 def advert(
@@ -63,11 +66,17 @@ def readings(
     }
 
 
-@pytest.mark.parametrize("vector", VECTORS + LIVE_VECTORS)
+@pytest.mark.parametrize(
+    "vector", [row for row in VECTORS + LIVE_VECTORS if row["version"] != 23]
+)
 def test_matches_app(vector: AppVector) -> None:
     """Compare against execution of the official app's parser methods."""
     parser = BlueMaestroBluetoothDeviceData()
-    assert readings(parser, bytes.fromhex(vector["payload"])) == vector["expected"]
+    expected = dict(vector["expected"])
+    if vector["version"] == 27:
+        # Preserve the existing THPD sensor set; the app also calculates dew point.
+        expected.pop("dew_point")
+    assert readings(parser, bytes.fromhex(vector["payload"])) == expected
 
 
 @pytest.mark.parametrize("payload", PACKETS)
@@ -112,7 +121,7 @@ def test_legacy_22_preserved() -> None:
     }
 
 
-@pytest.mark.parametrize("version", [23, 27, 42, 43])
+@pytest.mark.parametrize("version", [42, 43])
 def test_zero_humidity_clears_dew_point(version: int) -> None:
     vectors = [row for row in VECTORS if row["version"] == version]
     parser = BlueMaestroBluetoothDeviceData()
@@ -147,31 +156,46 @@ def test_unrelated_manufacturer() -> None:
 
 
 def test_pressure_unsigned_legacy() -> None:
-    payload = bytearray(PACKETS[3])
+    payload = bytearray.fromhex(
+        next(row["payload"] for row in VECTORS if row["version"] == 27)
+    )
     payload[10:12] = bytes.fromhex("9c40")
     assert (
         readings(BlueMaestroBluetoothDeviceData(), bytes(payload))["pressure"] == 4000
     )
 
 
-@pytest.mark.parametrize("version", [23, 27, 42, 43])
+@pytest.mark.parametrize("version", [42, 43])
 def test_dew_point_singular_temperature(version: int) -> None:
     payload = bytearray.fromhex(
         next(row["payload"] for row in VECTORS if row["version"] == version)
     )
-    modern = version >= 41
-    offset = 15 if modern else 6
-    payload[offset : offset + 2] = int(-243.5 * (100 if modern else 10)).to_bytes(
-        2, "little" if modern else "big", signed=True
-    )
+    payload[15:17] = (-24350).to_bytes(2, "little", signed=True)
     assert (
         readings(BlueMaestroBluetoothDeviceData(), bytes(payload))["dew_point"] is None
     )
 
 
-@pytest.mark.parametrize("scale", [10, 100])
-def test_dew_point_zero_denominator(scale: int) -> None:
-    """Return unknown when floating-point rounding makes the denominator zero."""
-    # Outside the advertisement range, this finite temperature makes alpha round
-    # to exactly 17.67 at saturation. Exercise the helper's defensive guard.
-    assert _dew_point(1e20, 100, scale) is None
+@pytest.mark.parametrize(
+    ("vector", "dew_point"),
+    list(
+        zip([row for row in LIVE_VECTORS if row["version"] == 23], [4.7, 4.9, 5.0, 3.6])
+    ),
+)
+def test_live_v23_transmitted_dew_point(vector: AppVector, dew_point: float) -> None:
+    """Keep the transmitted reading even when the app calculates another value."""
+    payload = bytes.fromhex(vector["payload"])
+    expected = dict(vector["expected"])
+    expected["dew_point"] = dew_point
+    assert readings(BlueMaestroBluetoothDeviceData(), payload) == expected
+
+
+@pytest.mark.parametrize("dew_point", [49, -123, 0])
+def test_v23_transmitted_dew_point(dew_point: int) -> None:
+    """Decode signed transmitted dew point independently of temperature/humidity."""
+    payload = bytearray(LEGACY_23)
+    payload[10:12] = dew_point.to_bytes(2, "big", signed=True)
+    assert (
+        readings(BlueMaestroBluetoothDeviceData(), bytes(payload))["dew_point"]
+        == dew_point / 10
+    )

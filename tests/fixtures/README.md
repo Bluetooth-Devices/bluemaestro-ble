@@ -23,3 +23,10 @@ Google Play bmLogger 13.8.4 decoder. MAC addresses, names, timestamps and proxy
 credentials are omitted. Temperature/battery values also match the proxy's
 independent hardcoded decoders; humidity/dew point are app comparisons. These
 are interoperability checks, not calibrated physical-accuracy measurements.
+
+The v23 synthetic app vectors are retained as reference evidence but are not
+parser expectations: they omit the transmitted dew-point field. Live v23 tests
+use that signed field at bytes 10–11 rather than the app-calculated expectation
+(one packet transmits 4.9 °C where the app calculates 5.0 °C). Separate synthetic
+regressions cover signed transmitted values. Version 27 comparisons omit the
+app-calculated dew point to preserve the existing THPD sensor set.
