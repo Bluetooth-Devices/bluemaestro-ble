@@ -9,7 +9,7 @@ from bleak.backends.device import BLEDevice
 from habluetooth import BluetoothServiceInfoBleak
 from sensor_state_data import DeviceKey
 
-from bluemaestro_ble.parser import BlueMaestroBluetoothDeviceData
+from bluemaestro_ble.parser import BlueMaestroBluetoothDeviceData, _dew_point
 
 
 class AppVector(TypedDict):
@@ -167,3 +167,11 @@ def test_dew_point_singular_temperature(version: int) -> None:
     assert (
         readings(BlueMaestroBluetoothDeviceData(), bytes(payload))["dew_point"] is None
     )
+
+
+@pytest.mark.parametrize("scale", [10, 100])
+def test_dew_point_zero_denominator(scale: int) -> None:
+    """Return unknown when floating-point rounding makes the denominator zero."""
+    # Outside the advertisement range, this finite temperature makes alpha round
+    # to exactly 17.67 at saturation. Exercise the helper's defensive guard.
+    assert _dew_point(1e20, 100, scale) is None
