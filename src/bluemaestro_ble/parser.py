@@ -117,7 +117,7 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
                 SensorLibrary.DEW_POINT__TEMP_CELSIUS, dew_point / 10
             )
         elif device_id == 0x1B:
-            batt, time_interval, log_cnt, temp, humi, press, mode = unpacked
+            batt, time_interval, log_cnt, temp, humi, press = unpacked
             self.update_predefined_sensor(SensorLibrary.PRESSURE__MBAR, press / 10)
         self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, batt)
         self.update_predefined_sensor(SensorLibrary.TEMPERATURE__CELSIUS, temp / 10)
