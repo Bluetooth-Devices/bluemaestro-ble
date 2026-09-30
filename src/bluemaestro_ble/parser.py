@@ -1,23 +1,24 @@
 """
 Parser for BlueMaestro BLE advertisements.
 
-Originally based on Ernst79/bleparser's BlueMaestro parser (MIT license).
-Current formats are independently implemented from bmLogger advertisement behavior.
+This file is shamelessly copied from the following repository:
+https://github.com/Ernst79/bleparser/blob/c42ae922e1abed2720c7fac993777e1bd59c0c93/package/bleparser/bluemaestro.py
+
+MIT License applies.
 """
 
 from __future__ import annotations
 
 import logging
 import math
-from collections.abc import Callable
 from dataclasses import dataclass
 from struct import Struct
-from typing import Any
 
 from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
 from habluetooth import BluetoothServiceInfoBleak
 from sensor_state_data import SensorLibrary
+from sensor_state_data.description import BaseSensorDescription
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,21 +26,79 @@ _LOGGER = logging.getLogger(__name__)
 @dataclass
 class BlueMaestroDevice:
     model: str
-    unpack: Callable[[bytes], tuple[Any, ...]]
-    length: int
+    struct: Struct
+    # (sensor description, unpacked field index, divisor)
+    fields: tuple[tuple[BaseSensorDescription, int, int], ...]
+    calculated_dew_point: bool = False
 
+
+TEMPERATURE_SENSOR_V8_ID = 0x08
+TEMPO_DISC_T_ID = 0x0D
+TEMPO_DISC_THD_LEGACY_ID = 0x16
+TEMPO_DISC_THD_ID = 0x17
+TEMPO_DISC_THPD_ID = 0x1B
+TEMPO_DISC_MAXI_T_ID = 0x29
+TEMPO_DISC_MAXI_THD_ID = 0x2A
+TEMPO_DISC_MAXI_THPD_ID = 0x2B
+
+_T_FIELDS = (
+    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 1, 10),
+)
+_THD_FIELDS = (
+    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 3, 10),
+    (SensorLibrary.HUMIDITY__PERCENTAGE, 4, 10),
+    (SensorLibrary.DEW_POINT__TEMP_CELSIUS, 5, 10),
+)
+_THPD_FIELDS = (
+    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 3, 10),
+    (SensorLibrary.HUMIDITY__PERCENTAGE, 4, 10),
+    (SensorLibrary.PRESSURE__MBAR, 5, 10),
+)
+_MAXI_T_FIELDS = (
+    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 1, 100),
+)
+_MAXI_THD_FIELDS = (
+    *_MAXI_T_FIELDS,
+    (SensorLibrary.HUMIDITY__PERCENTAGE, 2, 100),
+)
+_MAXI_THPD_FIELDS = (
+    *_MAXI_THD_FIELDS,
+    (SensorLibrary.PRESSURE__MBAR, 3, 100),
+)
 
 DEVICE_TYPES = {
-    0x08: BlueMaestroDevice(
-        "BlueMaestro Temperature Sensor v8", Struct("!B4xh").unpack, 8
+    TEMPERATURE_SENSOR_V8_ID: BlueMaestroDevice(
+        "BlueMaestro Temperature Sensor v8", Struct("!B4xh"), _T_FIELDS
     ),
-    0x0D: BlueMaestroDevice("Tempo Disc T", Struct("!B4xh").unpack, 8),
-    0x16: BlueMaestroDevice("Tempo Disc THD", Struct("!BhhhHhH").unpack, 14),
-    0x17: BlueMaestroDevice("Tempo Disc THD", Struct("!BhhhHhH").unpack, 14),
-    0x1B: BlueMaestroDevice("Tempo Disc THPD", Struct("!BhhhHH").unpack, 12),
-    0x29: BlueMaestroDevice("Tempo Disc Maxi T", Struct("<B13xh").unpack, 17),
-    0x2A: BlueMaestroDevice("Tempo Disc Maxi THD", Struct("<B13xhh").unpack, 19),
-    0x2B: BlueMaestroDevice("Tempo Disc Maxi THPD", Struct("<B13xhhi").unpack, 23),
+    TEMPO_DISC_T_ID: BlueMaestroDevice("Tempo Disc T", Struct("!B4xh"), _T_FIELDS),
+    TEMPO_DISC_THD_LEGACY_ID: BlueMaestroDevice(
+        "Tempo Disc THD", Struct("!BhhhHhH"), _THD_FIELDS
+    ),
+    TEMPO_DISC_THD_ID: BlueMaestroDevice(
+        "Tempo Disc THD", Struct("!BhhhHhH"), _THD_FIELDS
+    ),
+    TEMPO_DISC_THPD_ID: BlueMaestroDevice(
+        "Tempo Disc THPD", Struct("!BhhhHH"), _THPD_FIELDS
+    ),
+    TEMPO_DISC_MAXI_T_ID: BlueMaestroDevice(
+        "Tempo Disc Maxi T", Struct("<B13xh"), _MAXI_T_FIELDS
+    ),
+    TEMPO_DISC_MAXI_THD_ID: BlueMaestroDevice(
+        "Tempo Disc Maxi THD",
+        Struct("<B13xhh"),
+        _MAXI_THD_FIELDS,
+        calculated_dew_point=True,
+    ),
+    TEMPO_DISC_MAXI_THPD_ID: BlueMaestroDevice(
+        "Tempo Disc Maxi THPD",
+        Struct("<B13xhhi"),
+        _MAXI_THPD_FIELDS,
+        calculated_dew_point=True,
+    ),
 }
 
 MFR_ID = 0x0133
@@ -76,8 +135,8 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
         if device_id not in DEVICE_TYPES:
             return
         device = DEVICE_TYPES[device_id]
-        length = device.length
-        if len(data) < length:
+        end = device.struct.size + 1
+        if len(data) < end:
             return
         name = device_type = device.model
         self.set_precision(2)
@@ -85,40 +144,23 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
         self.set_title(f"{name} {short_address(service_info.address)}")
         self.set_device_name(f"{name} {short_address(service_info.address)}")
         self.set_device_manufacturer("BlueMaestro")
-        unpacked = device.unpack(data[1:length])
-        if device_id in [0x08, 0x0D]:
-            batt, temp = unpacked
-            self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, batt)
-            self.update_predefined_sensor(SensorLibrary.TEMPERATURE__CELSIUS, temp / 10)
-            return
-        if device_id in [0x29, 0x2A, 0x2B]:
-            batt, temp = unpacked[:2]
-            self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, batt)
+        unpacked = device.struct.unpack(data[1:end])
+        temperature: float | None = None
+        humidity: float | None = None
+        for description, index, divisor in device.fields:
+            raw = unpacked[index]
+            value = raw / divisor if divisor != 1 else raw
+            if description is SensorLibrary.TEMPERATURE__CELSIUS:
+                temperature = value
+            elif description is SensorLibrary.HUMIDITY__PERCENTAGE:
+                humidity = value
+            self.update_predefined_sensor(description, value)
+        if (
+            device.calculated_dew_point
+            and temperature is not None
+            and humidity is not None
+        ):
             self.update_predefined_sensor(
-                SensorLibrary.TEMPERATURE__CELSIUS, temp / 100
+                SensorLibrary.DEW_POINT__TEMP_CELSIUS,
+                _dew_point(temperature, humidity),
             )
-            if device_id in [0x2A, 0x2B]:
-                humi = unpacked[2]
-                self.update_predefined_sensor(
-                    SensorLibrary.HUMIDITY__PERCENTAGE, humi / 100
-                )
-                self.update_predefined_sensor(
-                    SensorLibrary.DEW_POINT__TEMP_CELSIUS,
-                    _dew_point(temp / 100, humi / 100),
-                )
-            if device_id == 0x2B:
-                self.update_predefined_sensor(
-                    SensorLibrary.PRESSURE__MBAR, unpacked[3] / 100
-                )
-            return
-        if device_id in [0x16, 0x17]:
-            batt, _time_interval, _log_cnt, temp, humi, dew_point, _mode = unpacked
-            self.update_predefined_sensor(
-                SensorLibrary.DEW_POINT__TEMP_CELSIUS, dew_point / 10
-            )
-        elif device_id == 0x1B:
-            batt, _time_interval, _log_cnt, temp, humi, press, _mode = unpacked
-            self.update_predefined_sensor(SensorLibrary.PRESSURE__MBAR, press / 10)
-        self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, batt)
-        self.update_predefined_sensor(SensorLibrary.TEMPERATURE__CELSIUS, temp / 10)
-        self.update_predefined_sensor(SensorLibrary.HUMIDITY__PERCENTAGE, humi / 10)

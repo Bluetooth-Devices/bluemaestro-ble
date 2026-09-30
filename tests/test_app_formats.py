@@ -179,7 +179,11 @@ def test_dew_point_singular_temperature(version: int) -> None:
 @pytest.mark.parametrize(
     ("vector", "dew_point"),
     list(
-        zip([row for row in LIVE_VECTORS if row["version"] == 23], [4.7, 4.9, 5.0, 3.6])
+        zip(
+            [row for row in LIVE_VECTORS if row["version"] == 23],
+            [4.7, 4.9, 5.0, 3.6],
+            strict=True,
+        )
     ),
 )
 def test_live_v23_transmitted_dew_point(vector: AppVector, dew_point: float) -> None:
