@@ -16,7 +16,7 @@ from sensor_state_data import (
 from bluemaestro_ble.parser import BlueMaestroBluetoothDeviceData
 
 
-def make_bluetooth_service_info(  # noqa: PLR0913
+def make_bluetooth_service_info(
     name: str,
     manufacturer_data: dict[int, bytes],
     service_uuids: list[str],
@@ -125,12 +125,12 @@ def test_temp_disc_thd():
             ),
             DeviceKey(key="dew_point", device_id=None): SensorValue(
                 device_key=DeviceKey(key="dew_point", device_id=None),
-                name="Dew " "Point",
+                name="Dew Point",
                 native_value=13.1,
             ),
             DeviceKey(key="signal_strength", device_id=None): SensorValue(
                 device_key=DeviceKey(key="signal_strength", device_id=None),
-                name="Signal " "Strength",
+                name="Signal Strength",
                 native_value=-60,
             ),
         },
@@ -210,12 +210,12 @@ def test_temp_disc_thd_raw():
             ),
             DeviceKey(key="dew_point", device_id=None): SensorValue(
                 device_key=DeviceKey(key="dew_point", device_id=None),
-                name="Dew " "Point",
+                name="Dew Point",
                 native_value=13.1,
             ),
             DeviceKey(key="signal_strength", device_id=None): SensorValue(
                 device_key=DeviceKey(key="signal_strength", device_id=None),
-                name="Signal " "Strength",
+                name="Signal Strength",
                 native_value=-60,
             ),
         },
@@ -299,7 +299,7 @@ def test_temp_disc_thpd():
             ),
             DeviceKey(key="signal_strength", device_id=None): SensorValue(
                 device_key=DeviceKey(key="signal_strength", device_id=None),
-                name="Signal " "Strength",
+                name="Signal Strength",
                 native_value=-60,
             ),
         },

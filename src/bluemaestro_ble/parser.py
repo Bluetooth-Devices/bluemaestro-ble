@@ -1,4 +1,5 @@
-"""Parser for BlueMaestro BLE advertisements.
+"""
+Parser for BlueMaestro BLE advertisements.
 
 Originally based on Ernst79/bleparser's BlueMaestro parser (MIT license).
 Current formats are independently implemented from bmLogger advertisement behavior.
@@ -23,7 +24,6 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class BlueMaestroDevice:
-
     model: str
     unpack: Callable[[bytes], tuple[Any, ...]]
     length: int
@@ -112,12 +112,12 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
                 )
             return
         if device_id in [0x16, 0x17]:
-            batt, time_interval, log_cnt, temp, humi, dew_point, mode = unpacked
+            batt, _time_interval, _log_cnt, temp, humi, dew_point, _mode = unpacked
             self.update_predefined_sensor(
                 SensorLibrary.DEW_POINT__TEMP_CELSIUS, dew_point / 10
             )
         elif device_id == 0x1B:
-            batt, time_interval, log_cnt, temp, humi, press, mode = unpacked
+            batt, _time_interval, _log_cnt, temp, humi, press, _mode = unpacked
             self.update_predefined_sensor(SensorLibrary.PRESSURE__MBAR, press / 10)
         self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, batt)
         self.update_predefined_sensor(SensorLibrary.TEMPERATURE__CELSIUS, temp / 10)
