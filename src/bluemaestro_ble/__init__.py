@@ -19,15 +19,14 @@ from .parser import BlueMaestroBluetoothDeviceData
 __version__ = "1.0.0"
 
 __all__ = [
-    "BlueMaestroBluetoothDeviceData",
     "BinarySensorDeviceClass",
     "BinarySensorValue",
-    "SensorDescription",
-    "SensorDeviceInfo",
+    "BlueMaestroBluetoothDeviceData",
     "DeviceKey",
-    "SensorUpdate",
+    "SensorDescription",
     "SensorDeviceClass",
     "SensorDeviceInfo",
+    "SensorUpdate",
     "SensorValue",
     "Units",
 ]
