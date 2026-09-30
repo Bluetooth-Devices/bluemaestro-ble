@@ -1,0 +1,332 @@
+[
+  {
+    "version": 8,
+    "payload": "08570000000000f2",
+    "expected": {
+      "battery": 87,
+      "temperature": 24.2
+    }
+  },
+  {
+    "version": 8,
+    "payload": "085700000000ff85",
+    "expected": {
+      "battery": 87,
+      "temperature": -12.3
+    }
+  },
+  {
+    "version": 8,
+    "payload": "0857000000000000",
+    "expected": {
+      "battery": 87,
+      "temperature": 0
+    }
+  },
+  {
+    "version": 8,
+    "payload": "08570000000000fa",
+    "expected": {
+      "battery": 87,
+      "temperature": 25
+    }
+  },
+  {
+    "version": 8,
+    "payload": "08570000000000fa",
+    "expected": {
+      "battery": 87,
+      "temperature": 25
+    }
+  },
+  {
+    "version": 13,
+    "payload": "0d570000000000f2",
+    "expected": {
+      "battery": 87,
+      "temperature": 24.2
+    }
+  },
+  {
+    "version": 13,
+    "payload": "0d5700000000ff85",
+    "expected": {
+      "battery": 87,
+      "temperature": -12.3
+    }
+  },
+  {
+    "version": 13,
+    "payload": "0d57000000000000",
+    "expected": {
+      "battery": 87,
+      "temperature": 0
+    }
+  },
+  {
+    "version": 13,
+    "payload": "0d570000000000fa",
+    "expected": {
+      "battery": 87,
+      "temperature": 25
+    }
+  },
+  {
+    "version": 13,
+    "payload": "0d570000000000fa",
+    "expected": {
+      "battery": 87,
+      "temperature": 25
+    }
+  },
+  {
+    "version": 23,
+    "payload": "17570000000000f201f2",
+    "expected": {
+      "battery": 87,
+      "temperature": 24.2,
+      "humidity": 49.8,
+      "dew_point": 13.1
+    }
+  },
+  {
+    "version": 23,
+    "payload": "175700000000ff850352",
+    "expected": {
+      "battery": 87,
+      "temperature": -12.3,
+      "humidity": 85,
+      "dew_point": -14.3
+    }
+  },
+  {
+    "version": 23,
+    "payload": "175700000000000003e8",
+    "expected": {
+      "battery": 87,
+      "temperature": 0,
+      "humidity": 100,
+      "dew_point": 0
+    }
+  },
+  {
+    "version": 23,
+    "payload": "17570000000000fa0000",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0,
+      "dew_point": null
+    }
+  },
+  {
+    "version": 23,
+    "payload": "17570000000000fa0001",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0.1,
+      "dew_point": -55.9
+    }
+  },
+  {
+    "version": 27,
+    "payload": "1b570000000000f201f22794",
+    "expected": {
+      "battery": 87,
+      "temperature": 24.2,
+      "humidity": 49.8,
+      "dew_point": 13.1,
+      "pressure": 1013.2
+    }
+  },
+  {
+    "version": 27,
+    "payload": "1b5700000000ff8503522794",
+    "expected": {
+      "battery": 87,
+      "temperature": -12.3,
+      "humidity": 85,
+      "dew_point": -14.3,
+      "pressure": 1013.2
+    }
+  },
+  {
+    "version": 27,
+    "payload": "1b5700000000000003e82794",
+    "expected": {
+      "battery": 87,
+      "temperature": 0,
+      "humidity": 100,
+      "dew_point": 0,
+      "pressure": 1013.2
+    }
+  },
+  {
+    "version": 27,
+    "payload": "1b570000000000fa00002794",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0,
+      "dew_point": null,
+      "pressure": 1013.2
+    }
+  },
+  {
+    "version": 27,
+    "payload": "1b570000000000fa00012794",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0.1,
+      "dew_point": -55.9,
+      "pressure": 1013.2
+    }
+  },
+  {
+    "version": 41,
+    "payload": "2957000000000000000000000000007409",
+    "expected": {
+      "battery": 87,
+      "temperature": 24.2
+    }
+  },
+  {
+    "version": 41,
+    "payload": "29570000000000000000000000000032fb",
+    "expected": {
+      "battery": 87,
+      "temperature": -12.3
+    }
+  },
+  {
+    "version": 41,
+    "payload": "2957000000000000000000000000000000",
+    "expected": {
+      "battery": 87,
+      "temperature": 0
+    }
+  },
+  {
+    "version": 41,
+    "payload": "295700000000000000000000000000c409",
+    "expected": {
+      "battery": 87,
+      "temperature": 25
+    }
+  },
+  {
+    "version": 41,
+    "payload": "295700000000000000000000000000c409",
+    "expected": {
+      "battery": 87,
+      "temperature": 25
+    }
+  },
+  {
+    "version": 42,
+    "payload": "2a570000000000000000000000000074097413",
+    "expected": {
+      "battery": 87,
+      "temperature": 24.2,
+      "humidity": 49.8,
+      "dew_point": 13.07
+    }
+  },
+  {
+    "version": 42,
+    "payload": "2a570000000000000000000000000032fb3421",
+    "expected": {
+      "battery": 87,
+      "temperature": -12.3,
+      "humidity": 85,
+      "dew_point": -14.3
+    }
+  },
+  {
+    "version": 42,
+    "payload": "2a570000000000000000000000000000001027",
+    "expected": {
+      "battery": 87,
+      "temperature": 0,
+      "humidity": 100,
+      "dew_point": 0
+    }
+  },
+  {
+    "version": 42,
+    "payload": "2a5700000000000000000000000000c4090000",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0,
+      "dew_point": null
+    }
+  },
+  {
+    "version": 42,
+    "payload": "2a5700000000000000000000000000c4090a00",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0.1,
+      "dew_point": -55.88
+    }
+  },
+  {
+    "version": 43,
+    "payload": "2b570000000000000000000000000074097413cd8b0100",
+    "expected": {
+      "battery": 87,
+      "temperature": 24.2,
+      "humidity": 49.8,
+      "dew_point": 13.07,
+      "pressure": 1013.25
+    }
+  },
+  {
+    "version": 43,
+    "payload": "2b570000000000000000000000000032fb3421cd8b0100",
+    "expected": {
+      "battery": 87,
+      "temperature": -12.3,
+      "humidity": 85,
+      "dew_point": -14.3,
+      "pressure": 1013.25
+    }
+  },
+  {
+    "version": 43,
+    "payload": "2b570000000000000000000000000000001027cd8b0100",
+    "expected": {
+      "battery": 87,
+      "temperature": 0,
+      "humidity": 100,
+      "dew_point": 0,
+      "pressure": 1013.25
+    }
+  },
+  {
+    "version": 43,
+    "payload": "2b5700000000000000000000000000c4090000cd8b0100",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0,
+      "dew_point": null,
+      "pressure": 1013.25
+    }
+  },
+  {
+    "version": 43,
+    "payload": "2b5700000000000000000000000000c4090a00cd8b0100",
+    "expected": {
+      "battery": 87,
+      "temperature": 25,
+      "humidity": 0.1,
+      "dew_point": -55.88,
+      "pressure": 1013.25
+    }
+  }
+]

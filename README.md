@@ -30,7 +30,29 @@
   <img src="https://img.shields.io/pypi/l/bluemaestro-ble.svg?style=flat-square" alt="License">
 </p>
 
-bluemaestro BLE devices
+A Python library for decoding BlueMaestro Bluetooth Low Energy sensor advertisements.
+
+## Supported advertisement formats
+
+| Version | Device family                         | Readings                                                       |
+| ------- | ------------------------------------- | -------------------------------------------------------------- |
+| 8       | Legacy BlueMaestro temperature sensor | Temperature, battery                                           |
+| 13      | Tempo Disc / Disc Mini temperature    | Temperature, battery                                           |
+| 22      | Legacy Tempo Disc THD                 | Temperature, humidity, transmitted dew point, battery          |
+| 23      | Tempo Disc THD / Disc Mini 3-in-1     | Temperature, humidity, transmitted dew point, battery          |
+| 27      | Tempo Disc THPD / Disc Mini 4-in-1    | Temperature, humidity, pressure, battery                       |
+| 41      | Disc Maxi temperature                 | Temperature, battery                                           |
+| 42      | Disc Maxi 3-in-1                      | Temperature, humidity, calculated dew point, battery           |
+| 43      | Disc Maxi 4-in-1                      | Temperature, humidity, pressure, calculated dew point, battery |
+
+All devices also expose signal strength. Versions 22/23 use transmitted dew point;
+Maxi 3-in-1/4-in-1 calculate it and report unknown at zero humidity. Truncated
+packets are ignored and trailing data is accepted.
+
+New formats were checked against synthetic bmLogger 13.8.4 readings. Physical
+v13/v23 packets were also tested; other formats remain unverified on hardware.
+Version 8's exact commercial model name is unconfirmed. See
+[fixture provenance](tests/fixtures/README.md) for validation details.
 
 ## Installation
 
