@@ -49,7 +49,7 @@ def make_bluetooth_service_info(
     )
 
 
-def test_can_create():
+def test_can_create() -> None:
     BlueMaestroBluetoothDeviceData()
 
 
@@ -66,7 +66,7 @@ TEMPO_DISC_THD = make_bluetooth_service_info(
 )
 
 
-def test_temp_disc_thd():
+def test_temp_disc_thd() -> None:
     parser = BlueMaestroBluetoothDeviceData()
     update = parser.update(TEMPO_DISC_THD)
     assert update == SensorUpdate(
@@ -137,7 +137,7 @@ def test_temp_disc_thd():
     )
 
 
-def test_temp_disc_thd_raw():
+def test_temp_disc_thd_raw() -> None:
     parser = BlueMaestroBluetoothDeviceData()
     update = parser.update(
         make_bluetooth_service_info(
@@ -222,6 +222,68 @@ def test_temp_disc_thd_raw():
     )
 
 
+TEMPO_DISC_T = make_bluetooth_service_info(
+    name="FABF5A2E",
+    manufacturer_data={307: b"\rd\x02X\n\xd1\x00\xfc\x01\x00"},
+    address="aa:bb:cc:dd:ee:ff",
+    rssi=-65,
+    service_data={},
+    service_uuids=[],
+    source="local",
+)
+
+
+def test_tempo_disc_t() -> None:
+    parser = BlueMaestroBluetoothDeviceData()
+    update = parser.update(TEMPO_DISC_T)
+    assert update == SensorUpdate(
+        title="Tempo Disc T EEFF",
+        devices={
+            None: SensorDeviceInfo(
+                name="Tempo Disc T EEFF",
+                model="Tempo Disc T",
+                manufacturer="BlueMaestro",
+                sw_version=None,
+                hw_version=None,
+            )
+        },
+        entity_descriptions={
+            DeviceKey(key="temperature", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="temperature", device_id=None),
+                device_class=SensorDeviceClass.TEMPERATURE,
+                native_unit_of_measurement=Units.TEMP_CELSIUS,
+            ),
+            DeviceKey(key="battery", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="battery", device_id=None),
+                device_class=SensorDeviceClass.BATTERY,
+                native_unit_of_measurement=Units.PERCENTAGE,
+            ),
+            DeviceKey(key="signal_strength", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="signal_strength", device_id=None),
+                device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+                native_unit_of_measurement=Units.SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+            ),
+        },
+        entity_values={
+            DeviceKey(key="temperature", device_id=None): SensorValue(
+                device_key=DeviceKey(key="temperature", device_id=None),
+                name="Temperature",
+                native_value=25.2,
+            ),
+            DeviceKey(key="battery", device_id=None): SensorValue(
+                device_key=DeviceKey(key="battery", device_id=None),
+                name="Battery",
+                native_value=100,
+            ),
+            DeviceKey(key="signal_strength", device_id=None): SensorValue(
+                device_key=DeviceKey(key="signal_strength", device_id=None),
+                name="Signal Strength",
+                native_value=-65,
+            ),
+        },
+    )
+
+
 TEMPO_DISC_THPD = make_bluetooth_service_info(
     name="FA17B62C",
     manufacturer_data={
@@ -235,7 +297,7 @@ TEMPO_DISC_THPD = make_bluetooth_service_info(
 )
 
 
-def test_temp_disc_thpd():
+def test_temp_disc_thpd() -> None:
     parser = BlueMaestroBluetoothDeviceData()
     update = parser.update(TEMPO_DISC_THPD)
     assert update == SensorUpdate(
@@ -306,7 +368,7 @@ def test_temp_disc_thpd():
     )
 
 
-def test_temp_disc_thd_raw_missing_data():
+def test_temp_disc_thd_raw_missing_data() -> None:
     """Test 307 in the manufacturer data by raw is missing it."""
     parser = BlueMaestroBluetoothDeviceData()
     update = parser.update(
@@ -330,3 +392,65 @@ def test_temp_disc_thd_raw_missing_data():
         binary_entity_values={},
         events={},
     )
+
+
+EMPTY_SENSOR_UPDATE = SensorUpdate(
+    title=None,
+    devices={},
+    entity_descriptions={},
+    entity_values={},
+    binary_entity_descriptions={},
+    binary_entity_values={},
+    events={},
+)
+
+
+def test_empty_manufacturer_data() -> None:
+    """Test an empty manufacturer data payload is ignored."""
+    parser = BlueMaestroBluetoothDeviceData()
+    update = parser.update(
+        make_bluetooth_service_info(
+            name="FABF5A2E",
+            manufacturer_data={307: b""},
+            address="aa:bb:cc:dd:ee:ff",
+            rssi=-65,
+            service_data={},
+            service_uuids=[],
+            source="local",
+        )
+    )
+    assert update == EMPTY_SENSOR_UPDATE
+
+
+def test_unknown_device_id() -> None:
+    """Test an unknown device id is ignored."""
+    parser = BlueMaestroBluetoothDeviceData()
+    update = parser.update(
+        make_bluetooth_service_info(
+            name="FABF5A2E",
+            manufacturer_data={307: b"\x99d\x02X\n\xd1\x00\xfc\x01\x00"},
+            address="aa:bb:cc:dd:ee:ff",
+            rssi=-65,
+            service_data={},
+            service_uuids=[],
+            source="local",
+        )
+    )
+    assert update == EMPTY_SENSOR_UPDATE
+
+
+def test_truncated_payload() -> None:
+    """Test a payload shorter than the device struct is ignored."""
+    parser = BlueMaestroBluetoothDeviceData()
+    update = parser.update(
+        make_bluetooth_service_info(
+            name="FABF5A2E",
+            manufacturer_data={307: b"\rd\x02X"},
+            address="aa:bb:cc:dd:ee:ff",
+            rssi=-65,
+            service_data={},
+            service_uuids=[],
+            source="local",
+        )
+    )
+    assert update == EMPTY_SENSOR_UPDATE
