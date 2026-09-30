@@ -30,7 +30,9 @@ class BlueMaestroDevice:
 
 
 DEVICE_TYPES = {
-    0x08: BlueMaestroDevice("BlueMaestro Temperature Sensor v8", Struct("!B4xh").unpack, 8),
+    0x08: BlueMaestroDevice(
+        "BlueMaestro Temperature Sensor v8", Struct("!B4xh").unpack, 8
+    ),
     0x0D: BlueMaestroDevice("Tempo Disc T", Struct("!B4xh").unpack, 8),
     0x16: BlueMaestroDevice("Tempo Disc THD", Struct("!BhhhHhH").unpack, 14),
     0x17: BlueMaestroDevice("Tempo Disc THD", Struct("!BhhhHhH").unpack, 14),
