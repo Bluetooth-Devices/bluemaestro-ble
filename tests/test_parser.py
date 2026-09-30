@@ -1,9 +1,4 @@
-from uuid import UUID
-
-from bleak.backends.device import BLEDevice
-from bluetooth_data_tools import monotonic_time_coarse
 from bluetooth_sensor_state_data import SensorUpdate
-from habluetooth import BluetoothServiceInfoBleak
 from sensor_state_data import (
     DeviceKey,
     SensorDescription,
@@ -14,39 +9,7 @@ from sensor_state_data import (
 )
 
 from bluemaestro_ble.parser import BlueMaestroBluetoothDeviceData
-
-
-def make_bluetooth_service_info(
-    name: str,
-    manufacturer_data: dict[int, bytes],
-    service_uuids: list[str],
-    address: str,
-    rssi: int,
-    service_data: dict[UUID, bytes],
-    source: str,
-    tx_power: int = 0,
-    raw: bytes | None = None,
-) -> BluetoothServiceInfoBleak:
-    return BluetoothServiceInfoBleak(
-        name=name,
-        manufacturer_data=manufacturer_data,
-        service_uuids=service_uuids,
-        address=address,
-        rssi=rssi,
-        service_data=service_data,
-        source=source,
-        device=BLEDevice(
-            name=name,
-            address=address,
-            details={},
-            rssi=rssi,
-        ),
-        time=monotonic_time_coarse(),
-        advertisement=None,
-        connectable=True,
-        tx_power=tx_power,
-        raw=raw,
-    )
+from tests.helpers import make_bluetooth_service_info
 
 
 def test_can_create() -> None:

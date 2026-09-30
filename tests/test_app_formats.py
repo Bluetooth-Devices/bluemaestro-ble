@@ -5,11 +5,11 @@ from pathlib import Path
 from typing import TypedDict
 
 import pytest
-from bleak.backends.device import BLEDevice
 from habluetooth import BluetoothServiceInfoBleak
 from sensor_state_data import DeviceKey
 
-from bluemaestro_ble.parser import BlueMaestroBluetoothDeviceData
+from bluemaestro_ble.parser import MFR_ID, BlueMaestroBluetoothDeviceData
+from tests.helpers import make_bluetooth_service_info
 
 
 class AppVector(TypedDict):
@@ -26,32 +26,34 @@ VECTORS = json.loads(
 LIVE_VECTORS = json.loads(
     (Path(__file__).parent / "fixtures/live-proxy.json").read_text()
 )
-LEGACY_22 = bytes.fromhex("16640e10000200f201f200830100")
-LEGACY_23 = bytes.fromhex("17640e10000200f201f200830100")
+LEGACY_22 = bytes.fromhex("16640e10000200f201f20083")
+LEGACY_23 = bytes.fromhex("17640e10000200f201f20083")
 PACKETS = [
     bytes.fromhex(row["payload"]) for row in VECTORS[::5] if row["version"] != 23
 ] + [LEGACY_22, LEGACY_23]
 
 
+def first_payload(version: int) -> bytes:
+    """Return the first golden-vector payload for an advertisement version."""
+    return bytes.fromhex(
+        next(row["payload"] for row in VECTORS if row["version"] == version)
+    )
+
+
 def advert(
     payload: bytes, source: str = "local", extra: bytes | None = None
 ) -> BluetoothServiceInfoBleak:
-    data = {307: payload}
+    data = {MFR_ID: payload}
     if extra is not None:
         data[1234] = extra
-    return BluetoothServiceInfoBleak(
+    return make_bluetooth_service_info(
         name="Sensor",
+        manufacturer_data=data,
         address="aa:bb:cc:dd:ee:ff",
         rssi=-60,
-        manufacturer_data=data,
         service_data={},
         service_uuids=[],
         source=source,
-        device=BLEDevice("aa:bb:cc:dd:ee:ff", "Sensor", {}),
-        advertisement=None,
-        connectable=False,
-        time=0,
-        tx_power=None,
     )
 
 
@@ -123,12 +125,19 @@ def test_legacy_22_preserved() -> None:
 
 @pytest.mark.parametrize("version", [42, 43])
 def test_zero_humidity_clears_dew_point(version: int) -> None:
-    vectors = [row for row in VECTORS if row["version"] == version]
-    parser = BlueMaestroBluetoothDeviceData()
-    assert (
-        readings(parser, bytes.fromhex(vectors[0]["payload"]))["dew_point"] is not None
+    defined = next(
+        row
+        for row in VECTORS
+        if row["version"] == version and row["expected"]["dew_point"] is not None
     )
-    assert readings(parser, bytes.fromhex(vectors[3]["payload"]))["dew_point"] is None
+    cleared = next(
+        row
+        for row in VECTORS
+        if row["version"] == version and row["expected"]["humidity"] == 0
+    )
+    parser = BlueMaestroBluetoothDeviceData()
+    assert readings(parser, bytes.fromhex(defined["payload"]))["dew_point"] is not None
+    assert readings(parser, bytes.fromhex(cleared["payload"]))["dew_point"] is None
 
 
 def test_changed_other_manufacturer_and_adapter_switch() -> None:
@@ -156,9 +165,7 @@ def test_unrelated_manufacturer() -> None:
 
 
 def test_pressure_unsigned_legacy() -> None:
-    payload = bytearray.fromhex(
-        next(row["payload"] for row in VECTORS if row["version"] == 27)
-    )
+    payload = bytearray(first_payload(27))
     payload[10:12] = bytes.fromhex("9c40")
     assert (
         readings(BlueMaestroBluetoothDeviceData(), bytes(payload))["pressure"] == 4000
@@ -167,9 +174,7 @@ def test_pressure_unsigned_legacy() -> None:
 
 @pytest.mark.parametrize("version", [42, 43])
 def test_dew_point_singular_temperature(version: int) -> None:
-    payload = bytearray.fromhex(
-        next(row["payload"] for row in VECTORS if row["version"] == version)
-    )
+    payload = bytearray(first_payload(version))
     payload[15:17] = (-24350).to_bytes(2, "little", signed=True)
     assert (
         readings(BlueMaestroBluetoothDeviceData(), bytes(payload))["dew_point"] is None

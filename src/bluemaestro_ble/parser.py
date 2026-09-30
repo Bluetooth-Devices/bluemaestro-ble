@@ -26,9 +26,11 @@ _LOGGER = logging.getLogger(__name__)
 @dataclass
 class BlueMaestroDevice:
     model: str
+    # Every struct ends at its last decoded field; trailing advertisement
+    # bytes are statistics the parser does not read.
     struct: Struct
-    # (sensor description, unpacked field index, divisor)
-    fields: tuple[tuple[BaseSensorDescription, int, int], ...]
+    # One (sensor description, divisor) pair per unpacked struct field, in order.
+    fields: tuple[tuple[BaseSensorDescription, int], ...]
     calculated_dew_point: bool = False
 
 
@@ -42,47 +44,45 @@ TEMPO_DISC_MAXI_THD_ID = 0x2A
 TEMPO_DISC_MAXI_THPD_ID = 0x2B
 
 _T_FIELDS = (
-    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
-    (SensorLibrary.TEMPERATURE__CELSIUS, 1, 10),
+    (SensorLibrary.BATTERY__PERCENTAGE, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 10),
 )
 _THD_FIELDS = (
-    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
-    (SensorLibrary.TEMPERATURE__CELSIUS, 3, 10),
-    (SensorLibrary.HUMIDITY__PERCENTAGE, 4, 10),
-    (SensorLibrary.DEW_POINT__TEMP_CELSIUS, 5, 10),
+    (SensorLibrary.BATTERY__PERCENTAGE, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 10),
+    (SensorLibrary.HUMIDITY__PERCENTAGE, 10),
+    (SensorLibrary.DEW_POINT__TEMP_CELSIUS, 10),
 )
 _THPD_FIELDS = (
-    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
-    (SensorLibrary.TEMPERATURE__CELSIUS, 3, 10),
-    (SensorLibrary.HUMIDITY__PERCENTAGE, 4, 10),
-    (SensorLibrary.PRESSURE__MBAR, 5, 10),
+    (SensorLibrary.BATTERY__PERCENTAGE, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 10),
+    (SensorLibrary.HUMIDITY__PERCENTAGE, 10),
+    (SensorLibrary.PRESSURE__MBAR, 10),
 )
 _MAXI_T_FIELDS = (
-    (SensorLibrary.BATTERY__PERCENTAGE, 0, 1),
-    (SensorLibrary.TEMPERATURE__CELSIUS, 1, 100),
+    (SensorLibrary.BATTERY__PERCENTAGE, 1),
+    (SensorLibrary.TEMPERATURE__CELSIUS, 100),
 )
 _MAXI_THD_FIELDS = (
     *_MAXI_T_FIELDS,
-    (SensorLibrary.HUMIDITY__PERCENTAGE, 2, 100),
+    (SensorLibrary.HUMIDITY__PERCENTAGE, 100),
 )
 _MAXI_THPD_FIELDS = (
     *_MAXI_THD_FIELDS,
-    (SensorLibrary.PRESSURE__MBAR, 3, 100),
+    (SensorLibrary.PRESSURE__MBAR, 100),
 )
+
+_THD = BlueMaestroDevice("Tempo Disc THD", Struct("!B4xhHh"), _THD_FIELDS)
 
 DEVICE_TYPES = {
     TEMPERATURE_SENSOR_V8_ID: BlueMaestroDevice(
         "BlueMaestro Temperature Sensor v8", Struct("!B4xh"), _T_FIELDS
     ),
     TEMPO_DISC_T_ID: BlueMaestroDevice("Tempo Disc T", Struct("!B4xh"), _T_FIELDS),
-    TEMPO_DISC_THD_LEGACY_ID: BlueMaestroDevice(
-        "Tempo Disc THD", Struct("!BhhhHhH"), _THD_FIELDS
-    ),
-    TEMPO_DISC_THD_ID: BlueMaestroDevice(
-        "Tempo Disc THD", Struct("!BhhhHhH"), _THD_FIELDS
-    ),
+    TEMPO_DISC_THD_LEGACY_ID: _THD,
+    TEMPO_DISC_THD_ID: _THD,
     TEMPO_DISC_THPD_ID: BlueMaestroDevice(
-        "Tempo Disc THPD", Struct("!BhhhHH"), _THPD_FIELDS
+        "Tempo Disc THPD", Struct("!B4xhHH"), _THPD_FIELDS
     ),
     TEMPO_DISC_MAXI_T_ID: BlueMaestroDevice(
         "Tempo Disc Maxi T", Struct("<B13xh"), _MAXI_T_FIELDS
@@ -135,32 +135,28 @@ class BlueMaestroBluetoothDeviceData(BluetoothData):
         if device_id not in DEVICE_TYPES:
             return
         device = DEVICE_TYPES[device_id]
-        end = device.struct.size + 1
-        if len(data) < end:
+        struct = device.struct
+        if len(data) <= struct.size:
             return
         name = device_type = device.model
+        short_addr = short_address(service_info.address)
         self.set_precision(2)
         self.set_device_type(device_type)
-        self.set_title(f"{name} {short_address(service_info.address)}")
-        self.set_device_name(f"{name} {short_address(service_info.address)}")
+        self.set_title(f"{name} {short_addr}")
+        self.set_device_name(f"{name} {short_addr}")
         self.set_device_manufacturer("BlueMaestro")
-        unpacked = device.struct.unpack(data[1:end])
-        temperature: float | None = None
-        humidity: float | None = None
-        for description, index, divisor in device.fields:
-            raw = unpacked[index]
-            value = raw / divisor if divisor != 1 else raw
-            if description is SensorLibrary.TEMPERATURE__CELSIUS:
-                temperature = value
-            elif description is SensorLibrary.HUMIDITY__PERCENTAGE:
-                humidity = value
-            self.update_predefined_sensor(description, value)
-        if (
-            device.calculated_dew_point
-            and temperature is not None
-            and humidity is not None
+        values: dict[BaseSensorDescription, float] = {}
+        for (description, divisor), raw in zip(
+            device.fields, struct.unpack_from(data, 1), strict=True
         ):
+            value = raw / divisor if divisor != 1 else raw
+            values[description] = value
+            self.update_predefined_sensor(description, value)
+        if device.calculated_dew_point:
             self.update_predefined_sensor(
                 SensorLibrary.DEW_POINT__TEMP_CELSIUS,
-                _dew_point(temperature, humidity),
+                _dew_point(
+                    values[SensorLibrary.TEMPERATURE__CELSIUS],
+                    values[SensorLibrary.HUMIDITY__PERCENTAGE],
+                ),
             )
