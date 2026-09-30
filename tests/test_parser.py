@@ -222,6 +222,90 @@ def test_temp_disc_thd_raw():
     )
 
 
+TEMPO_DISC_THPD = make_bluetooth_service_info(
+    name="FA17B62C",
+    manufacturer_data={
+        307: b"\x1bd\x0e\x10\x00\x02\x00\xf2\x01\xf2\x00\x83\x01\x00\x01\r\x02\xab\x00\xf2\x01\xf2\x01\r\x02\xab\x00\xf2\x01\xf2\x00\xff\x02N\x00\x00\x00\x00\x00"
+    },
+    address="aa:bb:cc:dd:ee:ff",
+    rssi=-60,
+    service_data={},
+    service_uuids=[],
+    source="local",
+)
+
+
+def test_temp_disc_thpd():
+    parser = BlueMaestroBluetoothDeviceData()
+    update = parser.update(TEMPO_DISC_THPD)
+    assert update == SensorUpdate(
+        title="Tempo Disc THPD EEFF",
+        devices={
+            None: SensorDeviceInfo(
+                name="Tempo Disc THPD EEFF",
+                model="Tempo Disc THPD",
+                manufacturer="BlueMaestro",
+                sw_version=None,
+                hw_version=None,
+            )
+        },
+        entity_descriptions={
+            DeviceKey(key="temperature", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="temperature", device_id=None),
+                device_class=SensorDeviceClass.TEMPERATURE,
+                native_unit_of_measurement=Units.TEMP_CELSIUS,
+            ),
+            DeviceKey(key="humidity", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="humidity", device_id=None),
+                device_class=SensorDeviceClass.HUMIDITY,
+                native_unit_of_measurement=Units.PERCENTAGE,
+            ),
+            DeviceKey(key="battery", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="battery", device_id=None),
+                device_class=SensorDeviceClass.BATTERY,
+                native_unit_of_measurement=Units.PERCENTAGE,
+            ),
+            DeviceKey(key="pressure", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="pressure", device_id=None),
+                device_class=SensorDeviceClass.PRESSURE,
+                native_unit_of_measurement=Units.PRESSURE_MBAR,
+            ),
+            DeviceKey(key="signal_strength", device_id=None): SensorDescription(
+                device_key=DeviceKey(key="signal_strength", device_id=None),
+                device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+                native_unit_of_measurement=Units.SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+            ),
+        },
+        entity_values={
+            DeviceKey(key="temperature", device_id=None): SensorValue(
+                device_key=DeviceKey(key="temperature", device_id=None),
+                name="Temperature",
+                native_value=24.2,
+            ),
+            DeviceKey(key="humidity", device_id=None): SensorValue(
+                device_key=DeviceKey(key="humidity", device_id=None),
+                name="Humidity",
+                native_value=49.8,
+            ),
+            DeviceKey(key="battery", device_id=None): SensorValue(
+                device_key=DeviceKey(key="battery", device_id=None),
+                name="Battery",
+                native_value=100,
+            ),
+            DeviceKey(key="pressure", device_id=None): SensorValue(
+                device_key=DeviceKey(key="pressure", device_id=None),
+                name="Pressure",
+                native_value=13.1,
+            ),
+            DeviceKey(key="signal_strength", device_id=None): SensorValue(
+                device_key=DeviceKey(key="signal_strength", device_id=None),
+                name="Signal " "Strength",
+                native_value=-60,
+            ),
+        },
+    )
+
+
 def test_temp_disc_thd_raw_missing_data():
     """Test 307 in the manufacturer data by raw is missing it."""
     parser = BlueMaestroBluetoothDeviceData()
